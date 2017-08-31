@@ -49,7 +49,8 @@ Vagrant.configure("2") do |config|
       ansible.config_file = "ansible/ansible.cfg"
       ansible.playbook = "ansible/playbook.yml"
       ansible.inventory_path = "ansible/inventory.ini"
-      #ansible.verbose = "v"
+      ansible.sudo = true
+      ansible.verbose = "v"
     end
 
     #jumpserver.vm.provision "file", source: "dissector_fuzz.sh", destination: "dissector_fuzz.sh"

@@ -1,0 +1,5 @@
+---
+- name: clone jumpserver repository
+  git:
+    repo: https://github.com/jumpserver/jumpserver.git
+    dest: /opt/jumpserver
