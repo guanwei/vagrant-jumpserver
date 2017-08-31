@@ -1,3 +1,4 @@
 # Vagrant stuff
-/.vagrant
+.vagrant/
 *.log
+*.retry
