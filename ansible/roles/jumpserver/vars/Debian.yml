@@ -1,0 +1,3 @@
+---
+jumpserver_git_repo_url: https://github.com/jumpserver/jumpserver.git
+jumpserver_install_path: /opt/jumpserver

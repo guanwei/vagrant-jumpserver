@@ -1,5 +1,12 @@
 ---
+# Variable setup.
+- name: Include OS-Specific variables
+  include_vars: "{{ ansible_os_family }}.yml"
+
 - name: clone jumpserver repository
   git:
-    repo: https://github.com/jumpserver/jumpserver.git
-    dest: /opt/jumpserver
+    repo: "{{ jumpserver_git_repo_url }}"
+    dest: "{{ jumpserver_install_path }}"
+
+- include: setup-Debian.yml
+  when: ansible_os_family == 'Debian'

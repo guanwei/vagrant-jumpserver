@@ -35,6 +35,8 @@ Vagrant.configure("2") do |config|
     config.proxy.no_proxy = ENV["no_proxy"]
   end
 
+  config.vm.synced_folder ".", "/vagrant", mount_options: ["dmode=775,fmode=600"]
+
   config.vm.define "jumpserver" do |node|
     node.vm.hostname = "jumpserver"
     #jumpserver.vm.network "forwarded_port", guest: 80, host: 8080

@@ -1,0 +1,6 @@
+---
+- name: Ensure dependencies are installed.
+  apt:
+    name: "{{ item }}"
+    state: installed
+  with_items: "{{ lookup('file', jumpserver_install_path + '/requirements/deb_requirements.txt') }}"
