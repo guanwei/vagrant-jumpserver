@@ -1,5 +1,5 @@
 ---
-- hosts: jumpserver
+- hosts: jumpserver-ansible
 
   vars_files:
     - vars/main.yml

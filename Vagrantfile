@@ -2,7 +2,7 @@
 # vi: set ft=ruby :
 
 Vagrant.configure("2") do |config|
-  required_plugins = %w(vagrant-timezone vagrant-hostmanager vagrant-proxyconf)
+  required_plugins = %w(vagrant-timezone vagrant-hostmanager vagrant-proxyconf vagrant-docker-compose)
   plugins_to_install = required_plugins.select { |plugin| not Vagrant.has_plugin? plugin }
   if not plugins_to_install.empty?
     puts "Installing plugins: #{plugins_to_install.join(' ')}"
@@ -17,9 +17,9 @@ Vagrant.configure("2") do |config|
   config.vm.box_check_update = false
 
   config.timezone.value = :host
-  
+
   config.hostmanager.enabled = true
-  config.hostmanager.manage_host = true
+  config.hostmanager.manage_host = false
   config.hostmanager.manage_guest = true
 
   if ENV["http_proxy"]
@@ -35,17 +35,16 @@ Vagrant.configure("2") do |config|
     config.proxy.no_proxy = ENV["no_proxy"]
   end
 
-  config.vm.synced_folder ".", "/vagrant", mount_options: ["dmode=775,fmode=600"]
-
-  config.vm.define "jumpserver" do |node|
-    node.vm.hostname = "jumpserver"
-    #jumpserver.vm.network "forwarded_port", guest: 80, host: 8080
-    node.vm.network "private_network", ip: "10.10.10.10"
+  config.vm.define "jumpserver-ansible" do |node|
+    node.vm.hostname = "jumpserver-ansible"
+    node.vm.network "private_network", ip: "10.10.10.11"
     node.vm.provider "virtualbox" do |v|
-      v.name = "jumpserver"
+      v.name = "jumpserver-ansible"
       v.cpus = "1"
       v.memory = "1024"
     end
+
+    node.vm.synced_folder ".", "/vagrant", mount_options: ["dmode=775,fmode=600"]
 
     node.vm.provision "ansible_local" do |ansible|
       ansible.config_file = "ansible/ansible.cfg"
@@ -55,7 +54,29 @@ Vagrant.configure("2") do |config|
       ansible.verbose = "v"
     end
 
-    #jumpserver.vm.provision "file", source: "dissector_fuzz.sh", destination: "dissector_fuzz.sh"
-    node.vm.provision "shell", path: "provision.sh"
+    node.vm.provision "shell", path: "scripts/bootstrap.sh"
+  end
+
+  config.vm.define "jumpserver-docker" do |node|
+    node.vm.hostname = "jumpserver-docker"
+    node.vm.network "private_network", ip: "10.10.10.12"
+    node.vm.provider "virtualbox" do |v|
+      v.name = "jumpserver-docker"
+      v.cpus = "1"
+      v.memory = "1024"
+    end
+
+    node.vm.provision "docker" do |d|
+      d.post_install_provision "shell", path: "scripts/set-docker-mirror.sh"
+    end
+
+    node.vm.provision "shell", path: "scripts/install-docker-compose.sh"
+
+    node.vm.provision "docker_compose",
+      compose_version: "1.16.1",
+      yml: "/vagrant/docker/docker-compose.yml",
+      run: "always"
+
+    node.vm.provision "shell", path: "scripts/bootstrap.sh"
   end
 end

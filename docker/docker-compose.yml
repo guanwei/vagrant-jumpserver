@@ -1,0 +1,55 @@
+version: '3'
+services:
+  redis:
+    image: redis:latest
+    container_name: redis
+    restart: always
+  mysql:
+    image: mysql:latest
+    container_name: mysql
+    restart: always
+    volumes:
+      - mysql_data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: 123456
+      MYSQL_DATABASE: jumpserver
+      MYSQL_USER: jumpserver
+      MYSQL_PASSWORD: jumpserver
+  jumpserver:
+    build: jumpserver
+    container_name: jumpserver
+    restart: always
+    environment:
+      SECRET_KEY: 1wzm+ky!127d5bhwf85mzz94u1xyuv3lut#(^ws=%s_hj$4%t
+      DB_ENGINE: mysql
+      DB_NAME: jumpserver
+      DB_USER: jumpserver
+      DB_PASSWORD: jumpserver
+      EMAIL_HOST: smtp.exmail.qq.com
+      EMAIL_PORT: 465
+      EMAIL_HOST_USER: jumpserver@example.com
+      EMAIL_HOST_PASSWORD: somepassword
+      EMAIL_SUBJECT_PREFIX: '[Jumpserver] '
+    ports:
+      - 8080:8080
+    depends_on:
+      - redis
+      - mysql
+  coco:
+    image: jumpserver/coco:v0.4.0-beta1
+    container_name: coco
+    restart: always
+    ports:
+      - 2222:2222
+    depends_on:
+      - jumpserver
+  luna:
+    image: jumpserver/luna:v0.4.0-beta1
+    container_name: luna
+    restart: always
+    ports:
+      - 5000:5000
+    depends_on:
+      - jumpserver
+volumes:
+    mysql_data:
